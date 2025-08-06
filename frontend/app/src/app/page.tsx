@@ -80,11 +80,11 @@ export default function Home() {
         </div>
 
         {/* Main layout: Documents center, Criteria right */}
-        <div className="flex flex-col lg:flex-row gap-8 min-h-[70vh]">
-          {/* Main section - Documents (equal width) */}
-          <div className="flex-1 space-y-8">
+        <div className="flex flex-col lg:flex-row gap-8 min-h-[10vh] max-h-[30vh] overflow-hidden">
+          {/* Main section - Documents (equal width, with scroll) */}
+          <div className="flex-1 overflow-hidden flex flex-col">
             {/* Add Document Button - consistent styling */}
-            <div className="flex justify-start">
+            <div className="flex justify-start mb-4 flex-shrink-0">
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="lg" className="gap-2">
@@ -111,16 +111,18 @@ export default function Home() {
               </Dialog>
             </div>
 
-            {/* Document List */}
-            <DocumentList
-              documents={documents}
-              onRemove={handleRemoveDocument}
-              onDownload={handleDownloadDocument}
-            />
+            {/* Document List - scrollable */}
+            <div className="overflow-y-auto flex-1">
+              <DocumentList
+                documents={documents}
+                onRemove={handleRemoveDocument}
+                onDownload={handleDownloadDocument}
+              />
+            </div>
           </div>
 
           {/* Vertical separator - hidden on mobile */}
-          <div className="hidden lg:block w-px bg-border"></div>
+          <div className="hidden lg:block w-px bg-border flex-shrink-0"></div>
 
           {/* Right section - Criteria (equal width, max 1/3 screen height) */}
           <div className="flex-1 max-h-[33vh] overflow-hidden flex flex-col">
