@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { DragArea } from "@/components/ui/dragArea"
 import { DocumentList } from "@/components/ui/document-list"
+import { CriteriaList } from "@/components/ui/criteriaList"
 
 interface DocumentItem {
   id: string
@@ -21,6 +22,12 @@ interface DocumentItem {
   size: number
   type: string
   uploadedAt: Date
+}
+
+interface Criterion {
+  id: string
+  text: string
+  variant: "grey1" | "grey2" | "grey3" | "grey4" | "grey5"
 }
 
 export default function Home() {
@@ -57,8 +64,12 @@ export default function Home() {
     console.log("Download document:", document?.name)
   }
 
+  const handleCriteriaChange = (newCriteria: Criterion[]) => {
+    console.log("Criteria updated:", newCriteria)
+  }
+
   return (
-    <main className="container mx-auto py-10 max-w-6xl">
+    <main className="container mx-auto py-10 max-w-full px-6">
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -68,40 +79,61 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Add Document Button */}
-        <div className="flex justify-center">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="lg" className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add Document
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Upload Documents</DialogTitle>
-                <DialogDescription>
-                  Drag and drop your files here or click to browse. You can upload multiple files at once.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="py-4">
-                <DragArea
-                  onFilesSelected={handleFilesSelected}
-                  accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.ppt,.pptx"
-                  multiple={true}
-                  maxFileSize={50}
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+        {/* Main layout: Documents center, Criteria right */}
+        <div className="flex flex-col lg:flex-row gap-8 min-h-[70vh]">
+          {/* Main section - Documents (equal width) */}
+          <div className="flex-1 space-y-8">
+            {/* Add Document Button - consistent styling */}
+            <div className="flex justify-start">
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Document
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px]">
+                  <DialogHeader>
+                    <DialogTitle>Upload Documents</DialogTitle>
+                    <DialogDescription>
+                      Drag and drop your files here or click to browse. You can upload multiple files at once.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <DragArea
+                      onFilesSelected={handleFilesSelected}
+                      accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.ppt,.pptx"
+                      multiple={true}
+                      maxFileSize={50}
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
 
-        {/* Document List */}
-        <DocumentList
-          documents={documents}
-          onRemove={handleRemoveDocument}
-          onDownload={handleDownloadDocument}
-        />
+            {/* Document List */}
+            <DocumentList
+              documents={documents}
+              onRemove={handleRemoveDocument}
+              onDownload={handleDownloadDocument}
+            />
+          </div>
+
+          {/* Vertical separator - hidden on mobile */}
+          <div className="hidden lg:block w-px bg-border"></div>
+
+          {/* Right section - Criteria (equal width, max 1/3 screen height) */}
+          <div className="flex-1 max-h-[33vh] overflow-hidden flex flex-col">
+            <div className="overflow-y-auto flex-1">
+              <CriteriaList
+                title="Document Criteria"
+                placeholder="Enter evaluation criterion..."
+                maxWords={50}
+                onCriteriaChange={handleCriteriaChange}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </main>  
   );
