@@ -1,0 +1,64 @@
+{
+  "rapport": [
+    {
+      "critere": "Prix / Valeur économique de loffre",
+      "note": 17,
+      "commentaire": "Le coût proposé est compétitif par rapport à la moyenne du marché, mais légèrement supérieur à certains concurrents.",
+      "couleur": "#4be04b"
+    },
+    {
+      "critere": "Qualité du service rendu aux usagers",
+      "note": 15,
+      "commentaire": "La fréquence et la ponctualité sont satisfaisantes, mais le confort des usagers pourrait être amélioré.",
+      "couleur": "#a3e04b"
+    },
+    {
+      "critere": "Présentation dun projet doffre / méthodologie",
+      "note": 18,
+      "commentaire": "Le projet est bien structuré, avec une méthodologie claire et des innovations pertinentes.",
+      "couleur": "#1abc1a"
+    },
+    {
+      "critere": "Engagement RSE (Responsabilité sociale et environnementale)",
+      "note": 13,
+      "commentaire": "Des efforts notables en matière d'environnement, mais l'inclusion sociale reste à renforcer.",
+      "couleur": "#d9e04b"
+    },
+    {
+      "critere": "Capacité technique et références",
+      "note": 19,
+      "commentaire": "L'entreprise dispose d'une solide expérience et de références récentes dans le domaine.",
+      "couleur": "#27ae60"
+    },
+    {
+      "critere": "Situation juridique du soumissionnaire",
+      "note": 20,
+      "commentaire": "Aucune condamnation ni procédure en cours, conformité totale.",
+      "couleur": "#00ff00"
+    },
+    {
+      "critere": "Conformité réglementaire et technique",
+      "note": 16,
+      "commentaire": "Respect des normes en vigueur, quelques ajustements mineurs recommandés.",
+      "couleur": "#7ed957"
+    },
+    {
+      "critere": "Capacité daccompagnement / réseau dassistance",
+      "note": 14,
+      "commentaire": "Service après-vente disponible, mais réseau dassistance local limité.",
+      "couleur": "#b7e04b"
+    },
+    {
+      "critere": "Diffusion / publicité et transparence",
+      "note": 12,
+      "commentaire": "Obligations de publicité respectées, mais manque de clarté sur certains aspects de la procédure.",
+      "couleur": "#e0c04b"
+    },
+    {
+      "critere": "Modalités de présentation et garanties administratives",
+      "note": 18,
+      "commentaire": "Dossier complet, attestations et garanties fournies conformément aux exigences.",
+      "couleur": "#1abc1a"
+    }
+  ]
+}
