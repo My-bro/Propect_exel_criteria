@@ -30,7 +30,7 @@ export function CriteriaList({
 }: CriteriaListProps) {
   const [criteria, setCriteria] = React.useState<Criterion[]>([])
   const [inputValue, setInputValue] = React.useState("")
-  const [isAddingCriterion, setIsAddingCriterion] = React.useState(false)
+  // Always show input, no add button
   const [wordCount, setWordCount] = React.useState(0)
   const inputRef = React.useRef<HTMLInputElement>(null)
 
@@ -54,20 +54,28 @@ export function CriteriaList({
   }
 
   const handleAddCriterion = () => {
-    if (inputValue.trim() && wordCount <= maxWords) {
-      const newCriterion: Criterion = {
+    if (!inputValue.trim() || wordCount > maxWords) return;
+    // If input contains quoted strings, parse and add each as a criterion
+    const quoted = inputValue.match(/"([^"]+)"/g);
+    let newCriteria: Criterion[] = [];
+    if (quoted && quoted.length > 0) {
+      newCriteria = quoted.map((q, i) => ({
+        id: Math.random().toString(36).substr(2, 9),
+        text: q.replace(/"/g, "").trim(),
+        variant: greyVariants[(criteria.length + i) % greyVariants.length]
+      }));
+    } else {
+      newCriteria = [{
         id: Math.random().toString(36).substr(2, 9),
         text: inputValue.trim(),
         variant: greyVariants[criteria.length % greyVariants.length]
-      }
-      
-      const updatedCriteria = [...criteria, newCriterion]
-      setCriteria(updatedCriteria)
-      setInputValue("")
-      setWordCount(0)
-      setIsAddingCriterion(false)
-      onCriteriaChange?.(updatedCriteria)
+      }];
     }
+    const updatedCriteria = [...criteria, ...newCriteria];
+    setCriteria(updatedCriteria);
+    setInputValue("");
+    setWordCount(0);
+    onCriteriaChange?.(updatedCriteria);
   }
 
   const handleRemoveCriterion = (id: string) => {
@@ -78,91 +86,51 @@ export function CriteriaList({
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      e.preventDefault()
-      handleAddCriterion()
+      e.preventDefault();
+      handleAddCriterion();
     }
     if (e.key === "Escape") {
-      setIsAddingCriterion(false)
-      setInputValue("")
-      setWordCount(0)
+      setInputValue("");
+      setWordCount(0);
     }
   }
 
-  const startAddingCriterion = () => {
-    setIsAddingCriterion(true)
-    // Focus input after state update
-    setTimeout(() => {
-      inputRef.current?.focus()
-    }, 0)
-  }
+
+
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Add Criterion Button - above title */}
-      {!isAddingCriterion && (
-        <div className="flex justify-start">
-          <Button
-            size="lg"
-            onClick={startAddingCriterion}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Criterion
-          </Button>
-        </div>
-      )}
-
       {/* Title */}
       <div>
         <h3 className="text-lg font-semibold">{title}</h3>
       </div>
 
-      {/* Input for adding new criterion */}
-      {isAddingCriterion && (
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <div className="flex-1 space-y-1">
-              <Input
-                ref={inputRef}
-                value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyPress}
-                placeholder={placeholder}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Press Enter to add, Esc to cancel</span>
-                <span className={cn(
-                  wordCount > maxWords * 0.8 && wordCount <= maxWords && "text-yellow-600",
-                  wordCount > maxWords && "text-red-600"
-                )}>
-                  {wordCount}/{maxWords} words
-                </span>
-              </div>
-            </div>
-            <div className="flex gap-1">
-              <Button
-                size="sm"
-                onClick={handleAddCriterion}
-                disabled={!inputValue.trim() || wordCount > maxWords}
-              >
-                Add
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsAddingCriterion(false)
-                  setInputValue("")
-                  setWordCount(0)
-                }}
-              >
-                Cancel
-              </Button>
+      {/* Input for adding new criterion (always visible) */}
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <div className="flex-1 space-y-1">
+            <Input
+              ref={inputRef}
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyPress}
+              placeholder={placeholder}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Press Enter to add{` `}
+                {`(use "quoted" for multiple)`}
+              </span>
+              <span className={cn(
+                wordCount > maxWords * 0.8 && wordCount <= maxWords && "text-yellow-600",
+                wordCount > maxWords && "text-red-600"
+              )}>
+                {wordCount}/{maxWords} words
+              </span>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Criteria Tags */}
       {criteria.length > 0 && (
@@ -202,13 +170,13 @@ export function CriteriaList({
       )}
 
       {/* Empty state */}
-      {criteria.length === 0 && !isAddingCriterion && (
+      {criteria.length === 0 && (
         <div className="text-center py-8 border-2 border-dashed border-muted-foreground/25 rounded-lg">
           <p className="text-muted-foreground text-sm">
             No criteria added yet
           </p>
           <p className="text-muted-foreground text-xs mt-1">
-            Click &quot;Add Criterion&quot; to get started
+            Type a criterion and press Enter to add
           </p>
         </div>
       )}
