@@ -15,6 +15,8 @@ import {
 import { DragArea } from "@/components/ui/dragArea"
 import { DocumentList } from "@/components/ui/document-list"
 import { CriteriaList } from "@/components/ui/criteriaList"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 
 interface DocumentItem {
   id: string
@@ -39,6 +41,43 @@ export default function Home() {
   const [reportResponse, setReportResponse] = React.useState<string>("")
   const [isGeneratingReport, setIsGeneratingReport] = React.useState(false)
   const [reportError, setReportError] = React.useState<string>("")
+  const [parsedReport, setParsedReport] = React.useState<any>(null)
+
+  // Function to parse the raw response
+  const parseReportResponse = (rawResponse: string) => {
+    try {
+      // Extract JSON from the raw response (it might be wrapped in markdown)
+      const jsonMatch = rawResponse.match(/```json\n([\s\S]*?)\n```/)
+      const jsonString = jsonMatch ? jsonMatch[1] : rawResponse
+      const parsed = JSON.parse(jsonString)
+      setParsedReport(parsed)
+    } catch (error) {
+      console.error('Error parsing report response:', error)
+      setParsedReport(null)
+    }
+  }
+
+  // Function to get color based on score (0-20 scale)
+  const getScoreColor = (score: number) => {
+    const percentage = score / 20
+    const red = Math.round(255 * (1 - percentage))
+    const green = Math.round(255 * percentage)
+    return `rgb(${red}, ${green}, 0)`
+  }
+
+  // Custom tooltip component for the pie chart
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload
+      return (
+        <div className="bg-white p-3 border rounded-lg shadow-lg max-w-md">
+          <p className="font-semibold">{data.critere}</p>
+          <p className="text-sm text-gray-600 whitespace-pre-wrap">{data.commentaire}</p>
+        </div>
+      )
+    }
+    return null
+  }
 
   React.useEffect(() => {
     const fetchTaskId = async () => {
@@ -159,6 +198,7 @@ export default function Home() {
         const data = await response.json()
         setReportResponse(data.raw_response)
         setReportError("") // Clear any errors on success
+        parseReportResponse(data.raw_response) // Parse the response for visualization
         console.log('Report generated:', data.raw_response)
       } else {
         let errorMessage = `Server error: ${response.status} ${response.statusText}`
@@ -191,6 +231,7 @@ export default function Home() {
     setCriteria([])
     setReportResponse("")
     setReportError("")
+    setParsedReport(null)
     setIsGeneratingReport(false)
   }
 
@@ -295,9 +336,89 @@ export default function Home() {
         )}
 
         {/* Report Response Display */}
-        {reportResponse && (
+        {parsedReport && parsedReport.rapport && (
+          <div className="mt-8">
+            <h3 className="text-2xl font-semibold mb-6">Report Analysis</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {parsedReport.rapport.map((item: any, index: number) => {
+                const scoreColor = getScoreColor(item.note)
+                const remainingScore = 20 - item.note
+                const chartData = [
+                  { 
+                    name: 'Score', 
+                    value: item.note, 
+                    color: scoreColor,
+                    critere: item.critere,
+                    commentaire: item.commentaire,
+                    note: item.note
+                  },
+                  { 
+                    name: 'Remaining', 
+                    value: remainingScore, 
+                    color: '#f3f4f6',
+                    critere: item.critere,
+                    commentaire: item.commentaire,
+                    note: item.note
+                  }
+                ]
+
+                return (
+                                    <Card key={index} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">{item.critere}</CardTitle>
+                      <CardDescription className="text-2xl font-bold text-center py-2">
+                        {item.note}/20
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-48 w-full mb-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={chartData}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={40}
+                              outerRadius={80}
+                              paddingAngle={0}
+                              dataKey="value"
+                            >
+                              {chartData.map((entry, i) => (
+                                <Cell key={`cell-${i}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="mt-4 text-center mb-3">
+                        <div 
+                          className="inline-block w-4 h-4 rounded-full mr-2"
+                          style={{ backgroundColor: scoreColor }}
+                        ></div>
+                        <span className="text-sm text-gray-600">
+                          {item.note >= 15 ? 'Excellent' : item.note >= 10 ? 'Good' : item.note >= 5 ? 'Fair' : 'Poor'}
+                        </span>
+                      </div>
+                      <div 
+                        className="text-xs text-gray-500 bg-gray-50 p-2 rounded cursor-pointer hover:bg-gray-100 transition-colors"
+                        title={item.commentaire}
+                      >
+                        {item.commentaire.length > 100 
+                          ? `${item.commentaire.substring(0, 100)}...` 
+                          : item.commentaire}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Raw Report Response (fallback) */}
+        {reportResponse && !parsedReport && (
           <div className="mt-8 p-4 bg-gray-100 rounded-lg">
-            <h3 className="text-lg font-semibold mb-2">Report Response:</h3>
+            <h3 className="text-lg font-semibold mb-2">Raw Report Response:</h3>
             <pre className="whitespace-pre-wrap text-sm">{reportResponse}</pre>
           </div>
         )}
