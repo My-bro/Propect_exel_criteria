@@ -81,8 +81,15 @@ async def chat_with_gpt(request: ChatRequest):
 
 
 # Route to query criteria using Mistral
+from typing import List, Optional
+from pydantic import BaseModel
+
+class QueryCriteriaRequest(BaseModel):
+    task_id: str
+    criteria: Optional[List[str]] = None
+
 @app.post("/query_criteria/")
-async def query_criteria(task_id: str = Body(..., embed=True)):
+async def query_criteria(request: QueryCriteriaRequest):
     """
     Prend en argument un task_id, extrait le texte des PDF du dossier temp associé,
     charge le JSON d'exemple, construit le prompt et interroge Mistral.
@@ -93,13 +100,18 @@ async def query_criteria(task_id: str = Body(..., embed=True)):
     if not mistral_api_key:
         raise HTTPException(status_code=500, detail="MISTRAL_API_KEY not configured")
 
-    temp_dir = os.path.join(os.path.dirname(__file__), "temp", task_id)
+    temp_dir = os.path.join(os.path.dirname(__file__), "temp", request.task_id)
     if not os.path.exists(temp_dir):
         raise HTTPException(status_code=404, detail="No documents found for this task_id")
 
     pdf_text = extract_texts_from_pdfs(temp_dir)
     criteria_json_path = os.path.join(os.path.dirname(__file__), "template", "example.json")
-    criteria = load_criteria_json(criteria_json_path)
+    criteria_example = load_criteria_json(criteria_json_path)
+
+    # Ajoute les critères reçus dans le prompt si fournis
+    criteria_section = ""
+    if request.criteria:
+        criteria_section = "\nVoici la liste des critères à évaluer :\n" + "\n".join(f"- {c}" for c in request.criteria)
 
     contexte = (
         "TU est une ia qui doit generer un rapport sur un appel d'offre. "
@@ -115,7 +127,8 @@ async def query_criteria(task_id: str = Body(..., embed=True)):
     prompt = (
         f"{contexte}\n\n"
         f"Voici le texte extrait des PDF :\n{pdf_text}\n\n"
-        f"Voici un exemple de format de réponse :\n{json.dumps(criteria, ensure_ascii=False, indent=2)}"
+        f"{criteria_section}\n"
+        f"Voici un exemple de format de réponse :\n{json.dumps(criteria_example, ensure_ascii=False, indent=2)}"
     )
 
     result = query_mistral_api(prompt, mistral_api_key)
