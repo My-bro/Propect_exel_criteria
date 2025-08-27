@@ -8,12 +8,15 @@ from dotenv import load_dotenv
 import openai
 from typing import Optional
 import uuid
-from fastapi import UploadFile, File, Form
+from fastapi import UploadFile, File, Form, Body
+from mistral_utils import extract_texts_from_pdfs, load_criteria_json, query_mistral_api
 
 # Load environment variables
 load_dotenv()
 
-
+# Get API keys with fallback
+mistral_api_key = os.getenv("MISTRAL_API_KEY")
+openai.api_key = os.getenv("GPT_API_KEY")
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -31,8 +34,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure OpenAI
-openai.api_key = os.getenv("GPT_API_KEY")
 
 # Pydantic models
 class ChatRequest(BaseModel):
@@ -46,6 +47,7 @@ class ChatResponse(BaseModel):
 async def root():
     """Health check endpoint"""
     return {"message": "FastAPI Backend is running!"}
+
 
 @app.get("/health")
 async def health_check():
@@ -77,23 +79,6 @@ async def chat_with_gpt(request: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-@app.get("/api/status")
-async def api_status():
-    """
-    Get API status and configuration
-    """
-    return {
-        "api_key_configured": bool(os.getenv("GPT_API_KEY")),
-        "service": "fastapi",
-        "version": "1.0.0"
-    }
-
-
-
-# --- ROUTE QUERY CRITERIA (placée après la création de app) ---
-from fastapi import Body
-from mistral_utils import extract_texts_from_pdfs, load_criteria_json, query_mistral_api
-
 
 # Route to query criteria using Mistral
 @app.post("/query_criteria/")
@@ -102,7 +87,9 @@ async def query_criteria(task_id: str = Body(..., embed=True)):
     Prend en argument un task_id, extrait le texte des PDF du dossier temp associé,
     charge le JSON d'exemple, construit le prompt et interroge Mistral.
     """
-    mistral_api_key = os.getenv("MISTRAL_API_KEY")
+
+
+    print(f"[DEBUG] MISTRAL_API_KEY used: {mistral_api_key}")
     if not mistral_api_key:
         raise HTTPException(status_code=500, detail="MISTRAL_API_KEY not configured")
 
@@ -139,7 +126,7 @@ async def query_criteria(task_id: str = Body(..., embed=True)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8004)
 
 
 # Route to generate a new task ID

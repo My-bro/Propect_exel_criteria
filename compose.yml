@@ -26,9 +26,8 @@ services:
     ports:
       - "8004:8004"
     env_file:
-      - .env
-    environment:
-      - PYTHONPATH=/app
+      - backend/.env
+
     volumes:
       - ./backend:/app
     networks:

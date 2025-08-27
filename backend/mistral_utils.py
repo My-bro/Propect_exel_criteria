@@ -38,5 +38,5 @@ def query_mistral_api(prompt, mistral_api_key):
     }
     response = requests.post(url, headers=headers, json=payload)
     if response.status_code != 200:
-        raise HTTPException(status_code=500, detail=f"Mistral API error: {response.text}")
+        raise HTTPException(status_code=500, detail=f"Mistral API error: {response.text} mistral_api_key: {mistral_api_key}")
     return response.json()["choices"][0]["message"]["content"]
