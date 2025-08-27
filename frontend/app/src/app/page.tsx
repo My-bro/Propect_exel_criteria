@@ -365,11 +365,13 @@ export default function Home() {
                 ]
 
                 return (
-                                    <Card 
-                    key={index} 
+                  <Card
+                    key={index}
                     className={`transition-all duration-300 ${
                       expandedCard === index ? 'transform scale-[1.02] shadow-xl ring-2 ring-blue-200' : 'hover:shadow-lg'
                     }`}
+                    onMouseEnter={() => setExpandedCard(index)}
+                    onMouseLeave={() => setExpandedCard(null)}
                   >
                     <CardHeader>
                       <CardTitle className="text-lg">{item.critere}</CardTitle>
@@ -402,7 +404,7 @@ export default function Home() {
                         </div>
                       </div>
                       <div className="mt-4 text-center mb-3">
-                        <div 
+                        <div
                           className="inline-block w-4 h-4 rounded-full mr-2"
                           style={{ backgroundColor: scoreColor }}
                         ></div>
@@ -410,19 +412,17 @@ export default function Home() {
                           {item.note >= 15 ? 'Excellent' : item.note >= 10 ? 'Good' : item.note >= 5 ? 'Fair' : 'Poor'}
                         </span>
                       </div>
-                      <div 
-                        className={`text-xs text-gray-500 bg-gray-50 p-2 rounded cursor-pointer transition-all duration-300 hover:bg-gray-100 ${
+                      <div
+                        className={`text-xs text-gray-500 bg-gray-50 p-2 rounded transition-all duration-300 ${
                           expandedCard === index ? 'text-gray-700 bg-blue-50 border border-blue-200' : ''
                         }`}
-                        onMouseEnter={() => setExpandedCard(index)}
-                        onMouseLeave={() => setExpandedCard(null)}
                       >
                         <div className={`transition-all duration-300 ${
                           expandedCard === index ? 'max-h-96 opacity-100' : 'max-h-12 opacity-80'
                         } overflow-hidden`}>
                           {expandedCard === index ? item.commentaire : (
-                            item.commentaire.length > 100 
-                              ? `${item.commentaire.substring(0, 100)}...` 
+                            item.commentaire.length > 100
+                              ? `${item.commentaire.substring(0, 100)}...`
                               : item.commentaire
                           )}
                         </div>

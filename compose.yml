@@ -9,9 +9,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - GPT_API_KEY=${GPT_API_KEY}
     volumes:
-      - ./frontend:/app
+      - ./frontend/app:/app
       - /app/node_modules
       - /app/.next
     env_file:

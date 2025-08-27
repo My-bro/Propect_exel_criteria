@@ -6,14 +6,14 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy package files
-COPY app/package.json app/pnpm-lock.yaml* ./
+COPY app/package.json ./
+COPY app/pnpm-lock.yaml* ./
 
 # Install dependencies
 RUN pnpm install
 
-# Copy source code
-COPY . .
-
+# Copy all app source code
+COPY app/ ./
 # Expose port
 EXPOSE 3000
 
