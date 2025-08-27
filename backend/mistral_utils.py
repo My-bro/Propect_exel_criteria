@@ -29,7 +29,7 @@ def query_mistral_api(prompt, mistral_api_key):
         "Content-Type": "application/json"
     }
     payload = {
-        "model": "mistral-large-latest",
+        "model": "mistral-small-latest",
         "messages": [
             {"role": "user", "content": prompt}
         ],
