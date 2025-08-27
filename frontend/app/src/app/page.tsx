@@ -42,6 +42,7 @@ export default function Home() {
   const [isGeneratingReport, setIsGeneratingReport] = React.useState(false)
   const [reportError, setReportError] = React.useState<string>("")
   const [parsedReport, setParsedReport] = React.useState<any>(null)
+  const [expandedCard, setExpandedCard] = React.useState<number | null>(null)
 
   // Function to parse the raw response
   const parseReportResponse = (rawResponse: string) => {
@@ -232,6 +233,7 @@ export default function Home() {
     setReportResponse("")
     setReportError("")
     setParsedReport(null)
+    setExpandedCard(null)
     setIsGeneratingReport(false)
   }
 
@@ -363,7 +365,12 @@ export default function Home() {
                 ]
 
                 return (
-                                    <Card key={index} className="hover:shadow-lg transition-shadow">
+                                    <Card 
+                    key={index} 
+                    className={`transition-all duration-300 ${
+                      expandedCard === index ? 'transform scale-[1.02] shadow-xl ring-2 ring-blue-200' : 'hover:shadow-lg'
+                    }`}
+                  >
                     <CardHeader>
                       <CardTitle className="text-lg">{item.critere}</CardTitle>
                       <CardDescription className="text-2xl font-bold text-center py-2">
@@ -371,24 +378,28 @@ export default function Home() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="h-48 w-full mb-4">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={chartData}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={40}
-                              outerRadius={80}
-                              paddingAngle={0}
-                              dataKey="value"
-                            >
-                              {chartData.map((entry, i) => (
-                                <Cell key={`cell-${i}`} fill={entry.color} />
-                              ))}
-                            </Pie>
-                          </PieChart>
-                        </ResponsiveContainer>
+                      <div className="w-full mb-4 flex items-center justify-center">
+                        <div className={`transition-all duration-300 ${
+                          expandedCard === index ? 'w-32 h-32' : 'w-48 h-48'
+                        }`}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={chartData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={expandedCard === index ? 15 : 30}
+                                outerRadius={expandedCard === index ? 35 : 70}
+                                paddingAngle={0}
+                                dataKey="value"
+                              >
+                                {chartData.map((entry, i) => (
+                                  <Cell key={`cell-${i}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                       <div className="mt-4 text-center mb-3">
                         <div 
@@ -400,12 +411,21 @@ export default function Home() {
                         </span>
                       </div>
                       <div 
-                        className="text-xs text-gray-500 bg-gray-50 p-2 rounded cursor-pointer hover:bg-gray-100 transition-colors"
-                        title={item.commentaire}
+                        className={`text-xs text-gray-500 bg-gray-50 p-2 rounded cursor-pointer transition-all duration-300 hover:bg-gray-100 ${
+                          expandedCard === index ? 'text-gray-700 bg-blue-50 border border-blue-200' : ''
+                        }`}
+                        onMouseEnter={() => setExpandedCard(index)}
+                        onMouseLeave={() => setExpandedCard(null)}
                       >
-                        {item.commentaire.length > 100 
-                          ? `${item.commentaire.substring(0, 100)}...` 
-                          : item.commentaire}
+                        <div className={`transition-all duration-300 ${
+                          expandedCard === index ? 'max-h-96 opacity-100' : 'max-h-12 opacity-80'
+                        } overflow-hidden`}>
+                          {expandedCard === index ? item.commentaire : (
+                            item.commentaire.length > 100 
+                              ? `${item.commentaire.substring(0, 100)}...` 
+                              : item.commentaire
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
